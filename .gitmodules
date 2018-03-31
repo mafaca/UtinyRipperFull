@@ -1,0 +1,3 @@
+[submodule "UtinyRipper"]
+	path = ThirdParty/UtinyRipper
+	url = https://github.com/mafaca/UtinyRipper
