@@ -1,5 +1,5 @@
 # UtinyRipperFull
-Latest build: [![Build status](https://ci.appveyor.com/api/projects/status/2un28pioo3kchuw8?svg=true)](https://ci.appveyor.com/project/mafaca/utinyripperfull)
+Latest build: [![Build status](https://ci.appveyor.com/api/projects/status/2aqvnu29q68lm3le?svg=true)](https://ci.appveyor.com/project/mafaca/utinyripperfull)
 
 
 UtinyRipper project with third party dlls for export
