@@ -1,5 +1,6 @@
 ﻿using FMOD;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -12,52 +13,46 @@ using Object = UtinyRipper.Classes.Object;
 
 namespace UtinyRipperFull.Exporters
 {
-	public class AudioAssetExporter : AssetExporter
+	public class AudioAssetExporter : IAssetExporter
 	{
-		public override IExportCollection CreateCollection(Object @object)
+		public IExportCollection CreateCollection(Object @object)
 		{
 			return new AssetExportCollection(this, @object);
 		}
 
-		public override bool Export(IAssetsExporter exporter, IExportCollection collection, string dirPath)
+		public void Export(ProjectAssetContainer container, Object asset, string path)
 		{
-			AssetExportCollection asset = (AssetExportCollection)collection;
-			AudioClip audioClip = (AudioClip)asset.Asset;
-			exporter.File = audioClip.File;
-			
-			string subFolder = audioClip.ClassID.ToString();
-			string subPath = Path.Combine(dirPath, subFolder);
-			string fileName = GetUniqueFileName(audioClip, subPath);
+			AudioClip audioClip = (AudioClip)asset;			
 			if (IsSupported(audioClip))
 			{
-				fileName = $"{Path.GetFileNameWithoutExtension(fileName)}.wav";
-			}
-			string filePath = Path.Combine(subPath, fileName);
-
-			if(!Directory.Exists(subPath))
-			{
-				Directory.CreateDirectory(subPath);
+				string dir = Path.GetDirectoryName(path);
+				string newName = $"{Path.GetFileNameWithoutExtension(path)}.wav";
+				path = Path.Combine(dir, newName);
 			}
 
-			exporter.File = audioClip.File;
-
-			using (FileStream fileStream = new FileStream(filePath, FileMode.CreateNew, FileAccess.Write))
+			container.File = audioClip.File;
+			using (FileStream fileStream = new FileStream(path, FileMode.CreateNew, FileAccess.Write))
 			{
 				if (IsSupported(audioClip))
 				{
-					ExportAudioClip(exporter, fileStream, audioClip);
+					ExportAudioClip(container, fileStream, audioClip);
 				}
 				else
 				{
-					audioClip.ExportBinary(exporter, fileStream);
+					audioClip.ExportBinary(container, fileStream);
 				}
 			}
-
-			ExportMeta(exporter, asset, filePath);
-			return true;
 		}
-		
-		public override AssetType ToExportType(ClassIDType classID)
+
+		public void Export(ProjectAssetContainer container, IEnumerable<Object> assets, string path)
+		{
+			foreach(Object asset in assets)
+			{
+				Export(container, asset, path);
+			}
+		}
+
+		public AssetType ToExportType(ClassIDType classID)
 		{
 			return AssetType.Meta;
 		}
@@ -113,7 +108,7 @@ namespace UtinyRipperFull.Exporters
 			}
 		}
 		
-		private void ExportAudioClip(IAssetsExporter exporter, FileStream fileStream, AudioClip clip)
+		private void ExportAudioClip(IExportContainer container, FileStream fileStream, AudioClip clip)
 		{
 			CREATESOUNDEXINFO exinfo = new CREATESOUNDEXINFO();
 			FMOD.System system = null;
@@ -139,7 +134,7 @@ namespace UtinyRipperFull.Exporters
 				byte[] data;
 				using (MemoryStream memStream = new MemoryStream())
 				{
-					clip.ExportBinary(exporter, memStream);
+					clip.ExportBinary(container, memStream);
 					data = memStream.ToArray();
 				}
 				if (data.Length == 0)

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
@@ -15,7 +16,7 @@ using Object = UtinyRipper.Classes.Object;
 
 namespace UtinyRipperFull.Exporters
 {
-	public class TextureAssetExporter: AssetExporter
+	public class TextureAssetExporter: IAssetExporter
 	{
 #warning TODO: replace to  other libs
 		[DllImport(PVRTexLibWrapperName, CallingConvention = CallingConvention.Cdecl)]
@@ -30,44 +31,37 @@ namespace UtinyRipperFull.Exporters
 		[DllImport(CrunchName, CallingConvention = CallingConvention.Cdecl)]
 		private static extern bool DecompressCRN(byte[] pSrcFileData, int srcFileSize, out IntPtr uncompressedData, out int uncompressedSize);
 
-		public override IExportCollection CreateCollection(Object @object)
+		public IExportCollection CreateCollection(Object @object)
 		{
 			return new AssetExportCollection(this, @object);
 		}
 		
-		public override bool Export(IAssetsExporter exporter, IExportCollection collection, string dirPath)
+		public void Export(ProjectAssetContainer container, Object asset, string path)
 		{
-			AssetExportCollection asset = (AssetExportCollection)collection;
-			Texture2D texture = (Texture2D)asset.Asset;
-			exporter.File = texture.File;
+			Texture2D texture = (Texture2D)asset;
+			container.File = texture.File;
 
-			string subFolder = texture.ClassID.ToString();
-			string subPath = Path.Combine(dirPath, subFolder);
-			string fileName = GetUniqueFileName(texture, subPath);
-			string filePath = Path.Combine(subPath, fileName);
-
-			if(!Directory.Exists(subPath))
+			container.File = texture.File;
+			using (FileStream fileStream = new FileStream(path, FileMode.CreateNew, FileAccess.Write))
 			{
-				Directory.CreateDirectory(subPath);
+				ExportTexture(container, fileStream, texture);
 			}
-
-			bool result;
-			exporter.File = texture.File;
-			using (FileStream fileStream = new FileStream(filePath, FileMode.CreateNew, FileAccess.Write))
-			{
-				result = ExportTexture(exporter, fileStream, texture);
-			}
-
-			ExportMeta(exporter, asset, filePath);
-			return result;
 		}
-		
-		public override AssetType ToExportType(ClassIDType classID)
+
+		public void Export(ProjectAssetContainer container, IEnumerable<Object> assets, string path)
+		{
+			foreach (Object asset in assets)
+			{
+				Export(container, asset, path);
+			}
+		}
+
+		public AssetType ToExportType(ClassIDType classID)
 		{
 			return AssetType.Meta;
 		}
 
-		private bool ExportTexture(IAssetsExporter exporter, FileStream fileStream, Texture2D texture)
+		private bool ExportTexture(ProjectAssetContainer container, FileStream fileStream, Texture2D texture)
 		{
 			byte[] buffer = null;
 			if (Texture2D.IsReadStreamData(texture.File.Version))
@@ -107,7 +101,7 @@ namespace UtinyRipperFull.Exporters
 				return false;
 			}
 
-			using (Bitmap bitmap = ConvertToBitmap(exporter, texture, buffer))
+			using (Bitmap bitmap = ConvertToBitmap(container, texture, buffer))
 			{
 				if (bitmap == null)
 				{
@@ -119,7 +113,7 @@ namespace UtinyRipperFull.Exporters
 			return true;
 		}
 
-		public Bitmap ConvertToBitmap(IAssetsExporter exporter, Texture2D texture, byte[] data)
+		public Bitmap ConvertToBitmap(ProjectAssetContainer exporter, Texture2D texture, byte[] data)
         {
             switch (texture.TextureFormat)
             {
