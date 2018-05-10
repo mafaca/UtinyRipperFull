@@ -7,7 +7,6 @@ using System.Linq;
 using System.Security.AccessControl;
 using System.Security.Principal;
 using UtinyRipper;
-using UtinyRipper.SerializedFiles;
 using UtinyRipperFull.Exporters;
 
 using Object = UtinyRipper.Classes.Object;
@@ -15,7 +14,7 @@ using Version = UtinyRipper.Version;
 
 namespace UtinyRipperFull
 {
-	public static class Program
+	public class Program
 	{
 		public static IEnumerable<Object> FetchExportObjects(FileCollection collection)
 		{
@@ -34,118 +33,104 @@ namespace UtinyRipperFull
 			if (args.Length == 0)
 			{
 				Console.WriteLine("No arguments");
-				Console.ReadKey();
 				return;
 			}
-			foreach(string arg in args)
+			foreach (string arg in args)
 			{
-				if(!FileMultiStream.Exists(arg))
+				if (!FileMultiStream.Exists(arg))
 				{
 					Console.WriteLine(FileMultiStream.IsMultiFile(arg) ?
 						$"File {arg} doen't has all parts for combining" :
 						$"File {arg} doesn't exist", arg);
-					Console.ReadKey();
 					return;
 				}
 			}
 
-			try
-			{
-				string name = Path.GetFileNameWithoutExtension(args.First());
-				string exportPath = ".\\Ripped\\" + name;
-				PrepareExportDirectory(exportPath);
-
-				FileCollection collection = new FileCollection();
-				collection.Exporter.OverrideExporter(ClassIDType.AudioClip, new AudioAssetExporter());
-				collection.Exporter.OverrideExporter(ClassIDType.Cubemap, new TextureAssetExporter());
-				collection.Exporter.OverrideExporter(ClassIDType.Texture2D, new TextureAssetExporter());
-
-				LoadFiles(collection, args);
-
-				LoadDependencies(collection, args);
-				ValidateCollection(collection);
-
-				collection.Exporter.Export(exportPath, FetchExportObjects(collection));
-
-				Logger.Instance.Log(LogType.Info, LogCategory.General, "Finished");
-			}
-			catch(Exception ex)
-			{
-				Logger.Instance.Log(LogType.Error, LogCategory.General, ex.ToString());
-			}
+			Program program = new Program();
+			program.Load(args);
 			Console.ReadKey();
 		}
 
-		private static void LoadFiles(FileCollection collection, IEnumerable<string> filePathes)
+		public Program()
 		{
-			List<string> processed = new List<string>();
-			foreach (string path in filePathes)
+			m_collection = new FileCollection();
+			m_collection.EventRequestDependency += OnRequestDependency;
+		}
+
+		public void Load(IReadOnlyList<string> args)
+		{
+			try
 			{
-				string filePath = FileMultiStream.GetFilePath(path);
-				if (processed.Contains(filePath))
-				{
-					continue;
-				}
-				
-				string fileName = FileMultiStream.GetFileName(path);
-				using (Stream stream = FileMultiStream.OpenRead(path))
-				{
-					collection.Read(stream, filePath, fileName);
-				}
-				processed.Add(filePath);
+				string name = Path.GetFileNameWithoutExtension(args.First());
+				string exportPath = Path.Combine("Ripped", name);
+
+				Prepare(exportPath, args);
+				LoadFiles(args);
+				Validate();
+
+				m_collection.Exporter.Export(exportPath, FetchExportObjects(m_collection));
+				Logger.Instance.Log(LogType.Info, LogCategory.General, "Finished");
+			}
+			catch (Exception ex)
+			{
+				Logger.Instance.Log(LogType.Error, LogCategory.General, ex.ToString());
 			}
 		}
 
-		private static void ValidateCollection(FileCollection collection)
+		private void Prepare(string exportPath, IEnumerable<string> filePathes)
 		{
-			Version[] versions = collection.Files.Select(t => t.Version).Distinct().ToArray();
-			if(versions.Count() > 1)
+			PrepareExportDirectory(exportPath);
+
+			foreach (string filePath in filePathes)
 			{
-				Logger.Instance.Log(LogType.Warning, LogCategory.Import, "Asset collection (probably) has incompatible with each assets file versions. Here they are:");
-				foreach(Version version in versions)
+				string dirPath = Path.GetDirectoryName(filePath);
+				m_knownDirectories.Add(dirPath);
+			}
+
+			m_collection.Exporter.OverrideExporter(ClassIDType.Texture2D, new TextureAssetExporter());
+			m_collection.Exporter.OverrideExporter(ClassIDType.AudioClip, new AudioAssetExporter());
+			m_collection.Exporter.OverrideExporter(ClassIDType.Cubemap, new TextureAssetExporter());
+		}
+
+		private void LoadFiles(IEnumerable<string> filePathes)
+		{
+			foreach (string filePath in filePathes)
+			{
+				string fileName = FileMultiStream.GetFileName(filePath);
+				LoadFile(filePath, fileName);
+			}
+		}
+
+		private void LoadFile(string fullFilePath, string originalFileName)
+		{
+			if (m_knownFiles.Add(originalFileName))
+			{
+				string filePath = FileMultiStream.GetFilePath(fullFilePath);
+				using (Stream stream = FileMultiStream.OpenRead(filePath))
+				{
+					m_collection.Read(stream, filePath, originalFileName);
+				}
+			}
+		}
+
+		private void Validate()
+		{
+			Version[] versions = m_collection.Files.Select(t => t.Version).Distinct().ToArray();
+			if (versions.Count() > 1)
+			{
+				Logger.Instance.Log(LogType.Warning, LogCategory.Import, $"Asset collection has versions probably incompatible with each other. Here they are:");
+				foreach (Version version in versions)
 				{
 					Logger.Instance.Log(LogType.Warning, LogCategory.Import, version.ToString());
 				}
 			}
 		}
 
-		private static void LoadDependencies(FileCollection collection, IEnumerable<string> files)
-		{
-			HashSet<string> directories = new HashSet<string>();
-			foreach (string filePath in files)
-			{
-				string dirPath = Path.GetDirectoryName(filePath);
-				directories.Add(dirPath);
-			}
-
-			HashSet<string> processed = new HashSet<string>();
-			foreach (ISerializedFile file in collection.Files)
-			{
-				processed.Add(file.Name);
-			}
-
-			for (int i = 0; i < collection.Files.Count; i++)
-			{
-				ISerializedFile serializedFile = collection.Files[i];
-				foreach (FileIdentifier file in serializedFile.Dependencies)
-				{
-					string fileName = file.FilePath;
-					if (processed.Contains(fileName))
-					{
-						continue;
-					}
-					
-					LoadDependency(collection, directories, fileName);
-					processed.Add(fileName);
-				}
-			}
-		}
-
-		private static void LoadDependency(FileCollection collection, IReadOnlyCollection<string> directories, string fileName)
+		private void LoadDependency(string fileName)
 		{
 			foreach (string loadName in FetchNameVariants(fileName))
 			{
-				bool found = TryLoadDependency(collection, directories, fileName, loadName);
+				bool found = TryLoadDependency(loadName, fileName);
 				if (found)
 				{
 					return;
@@ -155,33 +140,44 @@ namespace UtinyRipperFull
 			Logger.Instance.Log(LogType.Warning, LogCategory.Import, $"Dependency '{fileName}' wasn't found");
 		}
 
-		private static bool TryLoadDependency(FileCollection collection, IEnumerable<string> directories, string originalName, string loadName)
+		private bool TryLoadDependency(string loadName, string originalName)
 		{
-			foreach (string dirPath in directories)
+			foreach (string dirPath in m_knownDirectories)
 			{
 				string path = Path.Combine(dirPath, loadName);
-				try
+				if (FileMultiStream.Exists(path))
 				{
-					if (FileMultiStream.Exists(path))
-					{
-						using (Stream stream = FileMultiStream.OpenRead(path))
-						{
-							collection.Read(stream, path, originalName);
-						}
-
-						Logger.Instance.Log(LogType.Info, LogCategory.Import, $"Dependency '{path}' was loaded");
-						return true;
-					}
-				}
-				catch (Exception ex)
-				{
-					Logger.Instance.Log(LogType.Error, LogCategory.Import, $"Can't parse dependency file {path}");
-					Logger.Instance.Log(LogType.Error, LogCategory.Debug, ex.ToString());
+					LoadFile(path, originalName);
+					Logger.Instance.Log(LogType.Info, LogCategory.Import, $"Dependency '{path}' was loaded");
+					return true;
 				}
 			}
 			return false;
 		}
 
+		private string FindScriptFolder()
+		{
+			const string ScriptFolderName = "Managed";
+			foreach (string dirPath in m_knownDirectories)
+			{
+				string scriptPath = Path.Combine(dirPath, ScriptFolderName);
+				if (Directory.Exists(scriptPath))
+				{
+					return scriptPath;
+				}
+			}
+			return null;
+		}
+
+		private void OnRequestDependency(string dependency)
+		{
+			if (m_knownFiles.Contains(dependency))
+			{
+				return;
+			}
+
+			LoadDependency(dependency);
+		}
 
 		private static void PrepareExportDirectory(string path)
 		{
@@ -290,5 +286,10 @@ namespace UtinyRipperFull
 				yield return fixedName;
 			}
 		}
+
+		private readonly HashSet<string> m_knownDirectories = new HashSet<string>();
+		private readonly HashSet<string> m_knownFiles = new HashSet<string>();
+
+		private readonly FileCollection m_collection;
 	}
 }
