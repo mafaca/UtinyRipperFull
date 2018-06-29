@@ -103,7 +103,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ConsoleLogger.cs" />
-    <Compile Include="Exporters\AudioAssetExporter.cs" />
+    <Compile Include="Exporters\Audio\AudioExportCollection.cs" />
+    <Compile Include="Exporters\Audio\AudioAssetExporter.cs" />
     <Compile Include="Exporters\Texture\QFORMAT.cs" />
     <Compile Include="Exporters\Texture\TexgenpackTexturetype.cs" />
     <Compile Include="Exporters\Texture\TextureAssetExporter.cs" />

@@ -15,49 +15,7 @@ namespace UtinyRipperFull.Exporters
 {
 	public class AudioAssetExporter : IAssetExporter
 	{
-		public IExportCollection CreateCollection(Object @object)
-		{
-			return new AssetExportCollection(this, @object);
-		}
-
-		public void Export(ProjectAssetContainer container, Object asset, string path)
-		{
-			AudioClip audioClip = (AudioClip)asset;			
-			if (IsSupported(audioClip))
-			{
-				string dir = Path.GetDirectoryName(path);
-				string newName = $"{Path.GetFileNameWithoutExtension(path)}.wav";
-				path = Path.Combine(dir, newName);
-			}
-
-			container.File = audioClip.File;
-			using (FileStream fileStream = new FileStream(path, FileMode.CreateNew, FileAccess.Write))
-			{
-				if (IsSupported(audioClip))
-				{
-					ExportAudioClip(container, fileStream, audioClip);
-				}
-				else
-				{
-					audioClip.ExportBinary(container, fileStream);
-				}
-			}
-		}
-
-		public void Export(ProjectAssetContainer container, IEnumerable<Object> assets, string path)
-		{
-			foreach(Object asset in assets)
-			{
-				Export(container, asset, path);
-			}
-		}
-
-		public AssetType ToExportType(ClassIDType classID)
-		{
-			return AssetType.Meta;
-		}
-
-		private bool IsSupported(AudioClip audioClip)
+		public static bool IsSupported(AudioClip audioClip)
 		{
 			if (AudioClip.IsReadType(audioClip.File.Version))
 			{
@@ -96,7 +54,42 @@ namespace UtinyRipperFull.Exporters
 			}
 		}
 
-		private string GetAudioType(AudioClip audioClip)
+		public IExportCollection CreateCollection(Object @object)
+		{
+			return new AudioExportCollection(this, (AudioClip)@object);
+		}
+
+		public void Export(ProjectAssetContainer container, Object asset, string path)
+		{
+			AudioClip audioClip = (AudioClip)asset;
+			container.File = audioClip.File;
+			using (FileStream fileStream = new FileStream(path, FileMode.CreateNew, FileAccess.Write))
+			{
+				if (IsSupported(audioClip))
+				{
+					ExportAudioClip(container, fileStream, audioClip);
+				}
+				else
+				{
+					audioClip.ExportBinary(container, fileStream);
+				}
+			}
+		}
+
+		public void Export(ProjectAssetContainer container, IEnumerable<Object> assets, string path)
+		{
+			foreach(Object asset in assets)
+			{
+				Export(container, asset, path);
+			}
+		}
+
+		public AssetType ToExportType(ClassIDType classID)
+		{
+			return AssetType.Meta;
+		}
+
+		private static string GetAudioType(AudioClip audioClip)
 		{
 			if (AudioClip.IsReadType(audioClip.File.Version))
 			{
@@ -108,7 +101,7 @@ namespace UtinyRipperFull.Exporters
 			}
 		}
 		
-		private void ExportAudioClip(IExportContainer container, FileStream fileStream, AudioClip clip)
+		private static void ExportAudioClip(IExportContainer container, FileStream fileStream, AudioClip clip)
 		{
 			CREATESOUNDEXINFO exinfo = new CREATESOUNDEXINFO();
 			FMOD.System system = null;
