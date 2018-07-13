@@ -85,7 +85,7 @@ namespace UtinyRipperFull.Exporters
 						return false;
 					}
 					
-					res.Stream.Position = texture.StreamData.Offset;
+					res.Position = texture.StreamData.Offset;
 					buffer = new byte[texture.StreamData.Size];
 					res.Stream.Read(buffer, 0, buffer.Length);
 				}
