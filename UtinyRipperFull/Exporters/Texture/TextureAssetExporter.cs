@@ -33,7 +33,7 @@ namespace UtinyRipperFull.Exporters
 
 		public IExportCollection CreateCollection(Object @object)
 		{
-			return new AssetExportCollection(this, @object);
+			return new TextureExportCollection(this, @object);
 		}
 		
 		public void Export(ProjectAssetContainer container, Object asset, string path)
