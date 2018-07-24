@@ -59,10 +59,9 @@ namespace UtinyRipperFull.Exporters
 			return new AudioExportCollection(this, (AudioClip)@object);
 		}
 
-		public void Export(ProjectAssetContainer container, Object asset, string path)
+		public void Export(IExportContainer container, Object asset, string path)
 		{
 			AudioClip audioClip = (AudioClip)asset;
-			container.File = audioClip.File;
 			using (FileStream fileStream = new FileStream(path, FileMode.CreateNew, FileAccess.Write))
 			{
 				if (IsSupported(audioClip))
@@ -76,7 +75,7 @@ namespace UtinyRipperFull.Exporters
 			}
 		}
 
-		public void Export(ProjectAssetContainer container, IEnumerable<Object> assets, string path)
+		public void Export(IExportContainer container, IEnumerable<Object> assets, string path)
 		{
 			foreach(Object asset in assets)
 			{

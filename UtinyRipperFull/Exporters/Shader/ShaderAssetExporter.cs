@@ -10,17 +10,16 @@ namespace UtinyRipperFull.Exporters
 {
 	public class ShaderAssetExporter : IAssetExporter
 	{
-		public void Export(ProjectAssetContainer container, Object asset, string path)
+		public void Export(IExportContainer container, Object asset, string path)
 		{
 			using (FileStream fileStream = new FileStream(path, FileMode.CreateNew, FileAccess.Write))
 			{
 				Shader shader = (Shader)asset;
-				container.File = shader.File;
 				shader.ExportBinary(container, fileStream, ShaderExporterInstantiator);
 			}
 		}
 
-		public void Export(ProjectAssetContainer container, IEnumerable<Object> assets, string path)
+		public void Export(IExportContainer container, IEnumerable<Object> assets, string path)
 		{
 			foreach (Object asset in assets)
 			{
