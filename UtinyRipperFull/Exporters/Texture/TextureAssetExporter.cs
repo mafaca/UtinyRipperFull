@@ -36,19 +36,16 @@ namespace UtinyRipperFull.Exporters
 			return new TextureExportCollection(this, @object);
 		}
 		
-		public void Export(ProjectAssetContainer container, Object asset, string path)
+		public void Export(IExportContainer container, Object asset, string path)
 		{
 			Texture2D texture = (Texture2D)asset;
-			container.File = texture.File;
-
-			container.File = texture.File;
 			using (FileStream fileStream = new FileStream(path, FileMode.CreateNew, FileAccess.Write))
 			{
 				ExportTexture(container, fileStream, texture);
 			}
 		}
 
-		public void Export(ProjectAssetContainer container, IEnumerable<Object> assets, string path)
+		public void Export(IExportContainer container, IEnumerable<Object> assets, string path)
 		{
 			foreach (Object asset in assets)
 			{
@@ -61,7 +58,7 @@ namespace UtinyRipperFull.Exporters
 			return AssetType.Meta;
 		}
 
-		private bool ExportTexture(ProjectAssetContainer container, FileStream fileStream, Texture2D texture)
+		private bool ExportTexture(IExportContainer container, FileStream fileStream, Texture2D texture)
 		{
 			byte[] buffer = null;
 			if (Texture2D.IsReadStreamData(texture.File.Version))
@@ -113,7 +110,7 @@ namespace UtinyRipperFull.Exporters
 			return true;
 		}
 
-		public Bitmap ConvertToBitmap(ProjectAssetContainer exporter, Texture2D texture, byte[] data)
+		public Bitmap ConvertToBitmap(IExportContainer exporter, Texture2D texture, byte[] data)
         {
             switch (texture.TextureFormat)
             {
