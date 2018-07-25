@@ -31,9 +31,9 @@ namespace UtinyRipperFull.Exporters
 		[DllImport(CrunchName, CallingConvention = CallingConvention.Cdecl)]
 		private static extern bool DecompressCRN(byte[] pSrcFileData, int srcFileSize, out IntPtr uncompressedData, out int uncompressedSize);
 
-		public IExportCollection CreateCollection(Object @object)
+		public IExportCollection CreateCollection(Object asset)
 		{
-			return new TextureExportCollection(this, @object);
+			return new TextureExportCollection(this, asset);
 		}
 		
 		public void Export(IExportContainer container, Object asset, string path)

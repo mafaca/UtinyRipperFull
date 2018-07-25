@@ -87,10 +87,11 @@ namespace UtinyRipperFull
 				m_knownDirectories.Add(dirPath);
 			}
 
-			m_collection.Exporter.OverrideExporter(ClassIDType.Texture2D, new TextureAssetExporter());
+			TextureAssetExporter textureExporter = new TextureAssetExporter();
+			m_collection.Exporter.OverrideExporter(ClassIDType.Texture2D, textureExporter);
+			m_collection.Exporter.OverrideExporter(ClassIDType.Cubemap, textureExporter);
 			m_collection.Exporter.OverrideExporter(ClassIDType.Shader, new ShaderAssetExporter());
 			m_collection.Exporter.OverrideExporter(ClassIDType.AudioClip, new AudioAssetExporter());
-			m_collection.Exporter.OverrideExporter(ClassIDType.Cubemap, new TextureAssetExporter());
 		}
 
 		private void LoadFiles(IEnumerable<string> filePathes)
