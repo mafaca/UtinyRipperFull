@@ -1,4 +1,6 @@
-﻿using System;
+﻿#define DEBUG_PROGRAM
+
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -59,7 +61,9 @@ namespace UtinyRipperFull
 
 		public void Load(IReadOnlyList<string> args)
 		{
+#if !DEBUG_PROGRAM
 			try
+#endif
 			{
 				string name = Path.GetFileNameWithoutExtension(args.First());
 				string exportPath = Path.Combine("Ripped", name);
@@ -71,10 +75,12 @@ namespace UtinyRipperFull
 				m_collection.Exporter.Export(exportPath, FetchExportObjects(m_collection));
 				Logger.Instance.Log(LogType.Info, LogCategory.General, "Finished");
 			}
+#if !DEBUG_PROGRAM
 			catch (Exception ex)
 			{
 				Logger.Instance.Log(LogType.Error, LogCategory.General, ex.ToString());
 			}
+#endif
 		}
 
 		private void Prepare(string exportPath, IEnumerable<string> filePathes)
@@ -90,6 +96,7 @@ namespace UtinyRipperFull
 			TextureAssetExporter textureExporter = new TextureAssetExporter();
 			m_collection.Exporter.OverrideExporter(ClassIDType.Texture2D, textureExporter);
 			m_collection.Exporter.OverrideExporter(ClassIDType.Cubemap, textureExporter);
+			m_collection.Exporter.OverrideExporter(ClassIDType.Sprite, textureExporter);
 			m_collection.Exporter.OverrideExporter(ClassIDType.Shader, new ShaderAssetExporter());
 			m_collection.Exporter.OverrideExporter(ClassIDType.AudioClip, new AudioAssetExporter());
 		}

@@ -33,7 +33,11 @@ namespace UtinyRipperFull.Exporters
 
 		public IExportCollection CreateCollection(Object asset)
 		{
-			return new TextureExportCollection(this, asset);
+			if(asset.ClassID == ClassIDType.Sprite)
+			{
+				return TextureExportCollection.CreateExportCollection(this, (Sprite)asset);
+			}
+			return new TextureExportCollection(this, (Texture2D)asset);
 		}
 		
 		public void Export(IExportContainer container, Object asset, string path)
