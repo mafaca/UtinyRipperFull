@@ -10,6 +10,11 @@ namespace UtinyRipperFull.Exporters
 {
 	public class ShaderAssetExporter : IAssetExporter
 	{
+		public bool IsHandle(Object asset)
+		{
+			return true;
+		}
+
 		public void Export(IExportContainer container, Object asset, string path)
 		{
 			using (FileStream fileStream = new FileStream(path, FileMode.CreateNew, FileAccess.Write))
@@ -32,11 +37,18 @@ namespace UtinyRipperFull.Exporters
 			return new AssetExportCollection(this, asset);
 		}
 
-		public AssetType ToExportType(ClassIDType classID)
+		public AssetType ToExportType(Object asset)
 		{
-			return AssetType.Meta;
+			ToUnknownExportType(asset.ClassID, out AssetType assetType);
+			return assetType;
 		}
-		
+
+		public bool ToUnknownExportType(ClassIDType classID, out AssetType assetType)
+		{
+			assetType = AssetType.Meta;
+			return true;
+		}
+
 		private static ShaderTextExporter ShaderExporterInstantiator(ShaderGpuProgramType programType)
 		{
 			if(programType.IsDX())

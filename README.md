@@ -9,6 +9,7 @@ UtinyRipper project with third party dlls for export
 * AudioClip .wav export
 * Texture2D .png export (with Sprites)
 * Shader DirectX blob export
+* References to build-in Engine assets
 
 ## Dependencies
 [UtinyRipper](https://github.com/mafaca/UtinyRipper)

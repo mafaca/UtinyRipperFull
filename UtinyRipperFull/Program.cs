@@ -1,4 +1,4 @@
-﻿#define DEBUG_PROGRAM
+﻿//#define DEBUG_PROGRAM
 
 using System;
 using System.Collections.Generic;
@@ -99,6 +99,13 @@ namespace UtinyRipperFull
 			m_collection.Exporter.OverrideExporter(ClassIDType.Sprite, textureExporter);
 			m_collection.Exporter.OverrideExporter(ClassIDType.Shader, new ShaderAssetExporter());
 			m_collection.Exporter.OverrideExporter(ClassIDType.AudioClip, new AudioAssetExporter());
+
+			EngineAssetExporter engineExporter = new EngineAssetExporter();
+			m_collection.Exporter.OverrideExporter(ClassIDType.Material, engineExporter);
+			m_collection.Exporter.OverrideExporter(ClassIDType.Texture2D, engineExporter);
+			m_collection.Exporter.OverrideExporter(ClassIDType.Mesh, engineExporter);
+			m_collection.Exporter.OverrideExporter(ClassIDType.Shader, engineExporter);
+			m_collection.Exporter.OverrideExporter(ClassIDType.Sprite, engineExporter);
 		}
 
 		private void LoadFiles(IEnumerable<string> filePathes)

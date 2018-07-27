@@ -54,9 +54,14 @@ namespace UtinyRipperFull.Exporters
 			}
 		}
 
-		public IExportCollection CreateCollection(Object @object)
+		public bool IsHandle(Object asset)
 		{
-			return new AudioExportCollection(this, (AudioClip)@object);
+			return true;
+		}
+
+		public IExportCollection CreateCollection(Object asset)
+		{
+			return new AudioExportCollection(this, (AudioClip)asset);
 		}
 
 		public void Export(IExportContainer container, Object asset, string path)
@@ -83,9 +88,16 @@ namespace UtinyRipperFull.Exporters
 			}
 		}
 
-		public AssetType ToExportType(ClassIDType classID)
+		public AssetType ToExportType(Object asset)
 		{
-			return AssetType.Meta;
+			ToUnknownExportType(asset.ClassID, out AssetType assetType);
+			return assetType;
+		}
+
+		public bool ToUnknownExportType(ClassIDType classID, out AssetType assetType)
+		{
+			assetType = AssetType.Meta;
+			return true;
 		}
 
 		private static string GetAudioType(AudioClip audioClip)

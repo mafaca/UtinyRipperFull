@@ -16,7 +16,7 @@ using Object = UtinyRipper.Classes.Object;
 
 namespace UtinyRipperFull.Exporters
 {
-	public class TextureAssetExporter: IAssetExporter
+	public class TextureAssetExporter : IAssetExporter
 	{
 #warning TODO: replace to  other libs
 		[DllImport(PVRTexLibWrapperName, CallingConvention = CallingConvention.Cdecl)]
@@ -31,15 +31,11 @@ namespace UtinyRipperFull.Exporters
 		[DllImport(CrunchName, CallingConvention = CallingConvention.Cdecl)]
 		private static extern bool DecompressCRN(byte[] pSrcFileData, int srcFileSize, out IntPtr uncompressedData, out int uncompressedSize);
 
-		public IExportCollection CreateCollection(Object asset)
+		public bool IsHandle(Object asset)
 		{
-			if(asset.ClassID == ClassIDType.Sprite)
-			{
-				return TextureExportCollection.CreateExportCollection(this, (Sprite)asset);
-			}
-			return new TextureExportCollection(this, (Texture2D)asset);
+			return true;
 		}
-		
+
 		public void Export(IExportContainer container, Object asset, string path)
 		{
 			Texture2D texture = (Texture2D)asset;
@@ -57,9 +53,25 @@ namespace UtinyRipperFull.Exporters
 			}
 		}
 
-		public AssetType ToExportType(ClassIDType classID)
+		public IExportCollection CreateCollection(Object asset)
 		{
-			return AssetType.Meta;
+			if (asset.ClassID == ClassIDType.Sprite)
+			{
+				return TextureExportCollection.CreateExportCollection(this, (Sprite)asset);
+			}
+			return new TextureExportCollection(this, (Texture2D)asset);
+		}
+
+		public AssetType ToExportType(Object asset)
+		{
+			ToUnknownExportType(asset.ClassID, out AssetType assetType);
+			return assetType;
+		}
+
+		public bool ToUnknownExportType(ClassIDType classID, out AssetType assetType)
+		{
+			assetType = AssetType.Meta;
+			return true;
 		}
 
 		private bool ExportTexture(IExportContainer container, FileStream fileStream, Texture2D texture)
