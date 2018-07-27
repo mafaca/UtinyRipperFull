@@ -53,20 +53,16 @@ namespace UtinyRipperFull.Exporters
 				return false;
 			}
 
-			switch(asset.File.Name)
+			switch(asset.ClassID)
 			{
-				case "globalgamemanagers.assets":
-				case "resources.assets":
+				case ClassIDType.Material:
+				case ClassIDType.Shader:
 					break;
 
 				default:
-					if(m_sharedName.IsMatch(asset.File.Name))
-					{
-						break;
-					}
 					return false;
 			}
-
+			
 			switch(asset.ClassID)
 			{
 				case ClassIDType.Material:
@@ -337,12 +333,15 @@ namespace UtinyRipperFull.Exporters
 							case "Legacy Shaders/Decal":
 								return 100;
 
+							case "StandardSpecular":
 							case "Standard (Specular setup)":
 								return 45;
 							case "Standard":
 								return 46;
+							case "StandardRoughness":
 							case "Standard (Roughness setup)":
 								return 47;
+
 							case "FX/Flare":
 								return 101;
 
