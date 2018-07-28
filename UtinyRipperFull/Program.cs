@@ -105,6 +105,7 @@ namespace UtinyRipperFull
 			m_collection.Exporter.OverrideExporter(ClassIDType.Texture2D, engineExporter);
 			m_collection.Exporter.OverrideExporter(ClassIDType.Mesh, engineExporter);
 			m_collection.Exporter.OverrideExporter(ClassIDType.Shader, engineExporter);
+			m_collection.Exporter.OverrideExporter(ClassIDType.Font, engineExporter);
 			m_collection.Exporter.OverrideExporter(ClassIDType.Sprite, engineExporter);
 		}
 
