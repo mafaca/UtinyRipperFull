@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using UtinyRipper;
 
 namespace UtinyRipperFull.Exporters
 {

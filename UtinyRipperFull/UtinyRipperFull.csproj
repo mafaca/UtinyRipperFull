@@ -114,7 +114,7 @@
     <Compile Include="Exporters\Audio\AudioExportCollection.cs" />
     <Compile Include="Exporters\Audio\AudioAssetExporter.cs" />
     <Compile Include="Exporters\Engine\EngineAssetExporter.cs" />
-    <Compile Include="Exporters\Engine\EngineBuildInAssets.cs" />
+    <Compile Include="Exporters\Engine\EngineBuiltInAssets.cs" />
     <Compile Include="Exporters\Engine\EngineExportCollection.cs" />
     <Compile Include="Exporters\Shader\ShaderDXExporter.cs" />
     <Compile Include="Exporters\Shader\ShaderAssetExporter.cs" />
