@@ -223,7 +223,5 @@ namespace UtinyRipperFull.Exporters
 		private static readonly EngineGUID FGUID;
 
 		private readonly HashSet<Object> m_assets = new HashSet<Object>();
-
-		private readonly static Regex m_sharedName = new Regex("sharedassets[0-9]+.assets");
 	}
 }

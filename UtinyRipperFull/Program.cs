@@ -1,4 +1,6 @@
-﻿//#define DEBUG_PROGRAM
+﻿#if DEBUG
+#define DEBUG_PROGRAM
+#endif
 
 using System;
 using System.Collections.Generic;
@@ -9,6 +11,7 @@ using System.Linq;
 using System.Security.AccessControl;
 using System.Security.Principal;
 using UtinyRipper;
+using UtinyRipper.Classes;
 using UtinyRipperFull.Exporters;
 
 using Object = UtinyRipper.Classes.Object;
