@@ -3,7 +3,6 @@ using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
 using DotNetDxc;
-using UtinyRipper;
 using UtinyRipper.Classes.Shaders.Exporters;
 
 namespace UtinyRipperFull.Exporters
@@ -18,10 +17,19 @@ namespace UtinyRipperFull.Exporters
 		public override void Export(byte[] shaderData, TextWriter writer)
 		{
 			int offset = 0;
-			int fourCC = BitConverter.ToInt32(shaderData, 6);
+			uint fourCC = BitConverter.ToUInt32(shaderData, 6);
 			if(fourCC == DXBCFourCC)
 			{
 				offset = 6;
+			}
+			else
+			{
+#warning HACK: TEMP:
+				fourCC = BitConverter.ToUInt32(shaderData, 5);
+				if (fourCC == DXBCFourCC)
+				{
+					offset = 5;
+				}
 			}
 
 			int length = shaderData.Length - offset;
@@ -67,7 +75,7 @@ namespace UtinyRipperFull.Exporters
 		/// <summary>
 		/// 'DXBC' ascii
 		/// </summary>
-		private const int DXBCFourCC = 0x43425844;
+		private const uint DXBCFourCC = 0x43425844;
 
 		private IDxcLibrary library;
 	}
