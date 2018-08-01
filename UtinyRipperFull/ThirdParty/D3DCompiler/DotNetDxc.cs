@@ -331,7 +331,7 @@ namespace DotNetDxc
     public class DefaultDxcLib
     {
         [DllImport(DXCompilerName, CallingConvention = CallingConvention.StdCall)]
-        private static extern int DxcCreateInstance(
+        internal static extern int DxcCreateInstance(
             ref Guid clsid,
             ref Guid iid,
             [MarshalAs(UnmanagedType.IUnknown)] out object instance);
