@@ -38,19 +38,42 @@ namespace UtinyRipperFull.Exporters
 
 		public void Export(IExportContainer container, Object asset, string path)
 		{
+			Export(container, asset, path, null);
+		}
+
+		public void Export(IExportContainer container, Object asset, string path, Action<IExportContainer, Object, string> callback)
+		{
 			Texture2D texture = (Texture2D)asset;
+			if (Texture2D.IsReadStreamData(texture.File.Version))
+			{
+				string resourcePath = texture.StreamData.Path;
+				if (resourcePath != string.Empty)
+				{
+					ResourcesFile res = texture.File.Collection.FindResourcesFile(texture.File, path);
+					if (res == null)
+					{
+						Logger.Instance.Log(LogType.Warning, LogCategory.Export, $"Can't export '{texture.Name}' because resources file '{path}' wasn't found");
+						return;
+					}
+				}
+			}
+
 			using (FileStream fileStream = new FileStream(path, FileMode.CreateNew, FileAccess.Write))
 			{
 				ExportTexture(container, fileStream, texture);
 			}
+
+			callback?.Invoke(container, asset, path);
 		}
 
 		public void Export(IExportContainer container, IEnumerable<Object> assets, string path)
 		{
-			foreach (Object asset in assets)
-			{
-				Export(container, asset, path);
-			}
+			throw new NotSupportedException();
+		}
+
+		public void Export(IExportContainer container, IEnumerable<Object> assets, string path, Action<IExportContainer, Object, string> callback)
+		{
+			throw new NotSupportedException();
 		}
 
 		public IExportCollection CreateCollection(Object asset)
@@ -74,7 +97,7 @@ namespace UtinyRipperFull.Exporters
 			return true;
 		}
 
-		private bool ExportTexture(IExportContainer container, FileStream fileStream, Texture2D texture)
+		private void ExportTexture(IExportContainer container, FileStream fileStream, Texture2D texture)
 		{
 			byte[] buffer = null;
 			if (Texture2D.IsReadStreamData(texture.File.Version))
@@ -91,13 +114,7 @@ namespace UtinyRipperFull.Exporters
 						throw new Exception("Texture contains data and resource path");
 					}
 					
-					ResourcesFile res = texture.File.Collection.FindResourcesFile(texture.File, path);
-					if (res == null)
-					{
-						Logger.Instance.Log(LogType.Warning, LogCategory.Export, $"Can't export '{texture.Name}' because resources file '{path}' wasn't found");
-						return false;
-					}
-					
+					ResourcesFile res = texture.File.Collection.FindResourcesFile(texture.File, path);					
 					res.Position = texture.StreamData.Offset;
 					buffer = new byte[texture.StreamData.Size];
 					res.Stream.Read(buffer, 0, buffer.Length);
@@ -107,23 +124,14 @@ namespace UtinyRipperFull.Exporters
 			{
 				buffer = (byte[])texture.ImageData;
 			}
-
-			if (buffer.Length == 0)
-			{
-				Logger.Instance.Log(LogType.Warning, LogCategory.Export, $"Can't export '{texture.Name}' because there is no image data for this texture");
-				return false;
-			}
-
+			
 			using (Bitmap bitmap = ConvertToBitmap(container, texture, buffer))
 			{
-				if (bitmap == null)
+				if (bitmap != null)
 				{
-					return false;
+					bitmap.Save(fileStream, ImageFormat.Png);
 				}
-				bitmap.Save(fileStream, ImageFormat.Png);
 			}
-
-			return true;
 		}
 
 		public Bitmap ConvertToBitmap(IExportContainer exporter, Texture2D texture, byte[] data)

@@ -66,6 +66,11 @@ namespace UtinyRipperFull.Exporters
 
 		public void Export(IExportContainer container, Object asset, string path)
 		{
+			Export(container, asset, path, null);
+		}
+
+		public void Export(IExportContainer container, Object asset, string path, Action<IExportContainer, Object, string> callback)
+		{
 			AudioClip audioClip = (AudioClip)asset;
 			using (FileStream fileStream = new FileStream(path, FileMode.CreateNew, FileAccess.Write))
 			{
@@ -78,14 +83,17 @@ namespace UtinyRipperFull.Exporters
 					audioClip.ExportBinary(container, fileStream);
 				}
 			}
+			callback?.Invoke(container, asset, path);
 		}
 
 		public void Export(IExportContainer container, IEnumerable<Object> assets, string path)
 		{
-			foreach(Object asset in assets)
-			{
-				Export(container, asset, path);
-			}
+			throw new NotSupportedException();
+		}
+
+		public void Export(IExportContainer container, IEnumerable<Object> assets, string path, Action<IExportContainer, Object, string> callback)
+		{
+			throw new NotSupportedException();
 		}
 
 		public AssetType ToExportType(Object asset)

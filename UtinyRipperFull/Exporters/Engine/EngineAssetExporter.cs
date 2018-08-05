@@ -24,11 +24,21 @@ namespace UtinyRipperFull.Exporters
 			throw new NotSupportedException();
 		}
 
+		public void Export(IExportContainer container, Object asset, string path, Action<IExportContainer, Object, string> callback)
+		{
+			throw new NotSupportedException();
+		}
+
 		public void Export(IExportContainer container, IEnumerable<Object> assets, string path)
 		{
 			throw new NotSupportedException();
 		}
-		
+
+		public void Export(IExportContainer container, IEnumerable<Object> assets, string path, Action<IExportContainer, Object, string> callback)
+		{
+			throw new NotSupportedException();
+		}
+
 		public AssetType ToExportType(Object asset)
 		{
 			return AssetType.Internal;
