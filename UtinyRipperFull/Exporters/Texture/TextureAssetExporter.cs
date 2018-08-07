@@ -49,10 +49,10 @@ namespace UtinyRipperFull.Exporters
 				string resourcePath = texture.StreamData.Path;
 				if (resourcePath != string.Empty)
 				{
-					ResourcesFile res = texture.File.Collection.FindResourcesFile(texture.File, path);
+					ResourcesFile res = texture.File.Collection.FindResourcesFile(texture.File, resourcePath);
 					if (res == null)
 					{
-						Logger.Instance.Log(LogType.Warning, LogCategory.Export, $"Can't export '{texture.Name}' because resources file '{path}' wasn't found");
+						Logger.Instance.Log(LogType.Warning, LogCategory.Export, $"Can't export '{texture.Name}' because resources file '{resourcePath}' wasn't found");
 						return;
 					}
 				}
