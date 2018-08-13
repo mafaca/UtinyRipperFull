@@ -7,8 +7,11 @@ namespace UtinyRipperFull
 	{
 		public ConsoleLogger()
 		{
-			Console.WindowWidth = (int)(Console.LargestWindowWidth * 0.8f);
-			Console.BufferHeight = 2000;
+			if (!RunetimeUtils.IsRunningOnMono)
+			{
+				Console.WindowWidth = (int)(Console.LargestWindowWidth * 0.8f);
+				Console.BufferHeight = 2000;
+			}
 		}
 
 		public void Log(LogType type, LogCategory category, string message)
