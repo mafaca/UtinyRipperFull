@@ -32,7 +32,6 @@ namespace UtinyRipperFull
 			Config.IsAdvancedLog = true;
 			Config.IsGenerateGUIDByContent = false;
 			Config.IsExportDependencies = false;
-			Config.IsConvertTexturesToPNG = true;
 
 			if (args.Length == 0)
 			{

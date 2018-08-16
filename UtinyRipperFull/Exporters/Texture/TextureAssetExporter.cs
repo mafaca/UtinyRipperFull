@@ -82,7 +82,7 @@ namespace UtinyRipperFull.Exporters
 			{
 				return TextureExportCollection.CreateExportCollection(this, (Sprite)asset);
 			}
-			return new TextureExportCollection(this, (Texture2D)asset);
+			return new TextureExportCollection(this, (Texture2D)asset, true);
 		}
 
 		public AssetType ToExportType(Object asset)
@@ -134,7 +134,7 @@ namespace UtinyRipperFull.Exporters
 			}
 		}
 
-		public Bitmap ConvertToBitmap(IExportContainer exporter, Texture2D texture, byte[] data)
+		public Bitmap ConvertToBitmap(IExportContainer container, Texture2D texture, byte[] data)
         {
             switch (texture.TextureFormat)
             {
@@ -151,11 +151,7 @@ namespace UtinyRipperFull.Exporters
 				case TextureFormat.RG16:
 				case TextureFormat.R8:
 				case TextureFormat.RGB565:
-					using (MemoryStream dstStream = new MemoryStream())
-					{
-						texture.ExportBinary(exporter, dstStream);
-						return new Bitmap(dstStream);
-					}
+					return DDSToBitmap(container, texture, data);
 
 				case TextureFormat.YUY2:
 				case TextureFormat.PVRTC_RGB2:
@@ -220,24 +216,10 @@ namespace UtinyRipperFull.Exporters
 
 	            case TextureFormat.DXT1Crunched:
 	            case TextureFormat.DXT5Crunched:
-	            {
-		            byte[] decompressed = DecompressCRN(data);
-		            using (MemoryStream dstStream = new MemoryStream())
-		            {
-			            using (MemoryStream srcStream = new MemoryStream(decompressed))
-			            {
-				            DDSConvertParameters @params = new DDSConvertParameters
-				            {
-					            Width = texture.Width,
-					            Height = texture.Height,
-					            PixelFormatFlags = texture.DDSPixelFormatFlags,
-					            FourCC = (DDSFourCCType)texture.DDSFourCC,
-				            };
-				            DDSConverter.ExportBitmap(dstStream, srcStream, @params);
-				            return new Bitmap(dstStream);;
-			            }
-		            }
-	            }
+				{
+					byte[] decompressed = DecompressCRN(data);
+					return DDSToBitmap(container, texture, decompressed);
+				}
 
 	            case TextureFormat.ETC_RGB4Crunched:
 	            case TextureFormat.ETC2_RGBA8Crunched:
@@ -266,6 +248,93 @@ namespace UtinyRipperFull.Exporters
 					return null;
             }
         }
+
+		private Bitmap DDSToBitmap(IExportContainer container, Texture2D texture, byte[] data)
+		{
+			DDSConvertParameters @params = new DDSConvertParameters()
+			{
+				DataLength = data.LongLength,
+				MipMapCount = texture.MipCount,
+				Width = texture.Width,
+				Height = texture.Height,
+				IsPitchOrLinearSize = texture.DDSIsPitchOrLinearSize,
+				PixelFormatFlags = texture.DDSPixelFormatFlags,
+				FourCC = (DDSFourCCType)texture.DDSFourCC,
+				RGBBitCount = texture.DDSRGBBitCount,
+				RBitMask = texture.DDSRBitMask,
+				GBitMask = texture.DDSGBitMask,
+				BBitMask = texture.DDSBBitMask,
+				ABitMask = texture.DDSABitMask,
+				Caps = texture.DDSCaps(container.Version),
+			};
+
+			int width = @params.Width;
+			int height = @params.Height;
+			int size = width * height * 4;
+			byte[] buffer = new byte[size];
+			using (MemoryStream destination = new MemoryStream(buffer))
+			{
+				using (MemoryStream source = new MemoryStream(data))
+				{
+					if(texture.IsSwapBytes(container.Platform))
+					{
+						using (ReverseStream reverse = new ReverseStream(source, source.Position, data.Length, true))
+						{
+							DecompressDDS(reverse, destination, @params);
+						}
+					}
+					else
+					{
+						DecompressDDS(source, destination, @params);
+					}
+				}
+
+				Bitmap bitmap = new Bitmap(width, height, PixelFormat.Format32bppArgb);
+				Rectangle rect = new Rectangle(0, 0, width, height);
+				BitmapData bitData = bitmap.LockBits(rect, ImageLockMode.ReadWrite, PixelFormat.Format32bppArgb);
+				IntPtr pointer = bitData.Scan0;
+				Marshal.Copy(buffer, 0, pointer, size);
+				bitmap.UnlockBits(bitData);
+				return bitmap;
+			}
+		}
+
+		private void DecompressDDS(Stream source, Stream destination, DDSConvertParameters @params)
+		{
+			if (@params.PixelFormatFlags.IsFourCC())
+			{
+				switch (@params.FourCC)
+				{
+					case DDSFourCCType.DXT1:
+						DDSDecompressor.DecompressDXT1(destination, source, @params);
+						break;
+					case DDSFourCCType.DXT5:
+						DDSDecompressor.DecompressDXT5(destination, source, @params);
+						break;
+
+					default:
+						throw new NotImplementedException(@params.FourCC.ToString());
+				}
+			}
+			else
+			{
+				if (@params.PixelFormatFlags.IsLuminace())
+				{
+					throw new NotSupportedException("Luminace isn't supported");
+				}
+				else
+				{
+					if (@params.PixelFormatFlags.IsAlphaPixels())
+					{
+						DDSDecompressor.DecompressRGBA(destination, source, @params);
+					}
+					else
+					{
+						DDSDecompressor.DecompressRGB(destination, source, @params);
+					}
+				}
+			}
+		}
 
 		private Bitmap PVRToBitmap(Texture2D texture, byte[] data)
 		{
