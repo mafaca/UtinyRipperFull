@@ -68,7 +68,7 @@ namespace UtinyRipperFull.Exporters
 				case ClassIDType.Material:
 					{
 						Material meterial = (Material)asset;
-						Shader shader = meterial.Shader.FindObject(meterial.File);
+						Shader shader = meterial.Shader.FindAsset(meterial.File);
 						if(shader == null)
 						{
 							return true;
