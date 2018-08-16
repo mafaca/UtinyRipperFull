@@ -47,7 +47,7 @@ namespace UtinyRipperFull
 				{
 					continue;
 				}
-				if (Directory.Exists(arg))
+				if (DirectoryUtils.Exists(arg))
 				{
 					continue;
 				}
@@ -122,9 +122,9 @@ namespace UtinyRipperFull
 				CheckWritePermission(directory);
 			}
 
-			if (Directory.Exists(path))
+			if (DirectoryUtils.Exists(path))
 			{
-				Directory.Delete(path, true);
+				DirectoryUtils.Delete(path, true);
 			}
 		}
 
@@ -135,7 +135,7 @@ namespace UtinyRipperFull
 			bool isInRoleWithAccess = false;
 			try
 			{
-				DirectoryInfo di = new DirectoryInfo(path);
+				DirectoryInfo di = new DirectoryInfo(DirectoryUtils.ToLongPath(path));
 				DirectorySecurity ds = di.GetAccessControl();
 				AuthorizationRuleCollection rules = ds.GetAccessRules(true, true, typeof(NTAccount));
 
