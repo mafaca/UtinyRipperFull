@@ -190,7 +190,7 @@ namespace UtinyRipperFull.Exporters
 			return m_assets.Contains(asset);
 		}
 
-		public ulong GetExportID(Object asset)
+		public long GetExportID(Object asset)
 		{
 			EngineBuiltInAsset engneAsset = GetEngineBuildInAsset(asset);
 			if(!engneAsset.IsValid)
@@ -209,7 +209,7 @@ namespace UtinyRipperFull.Exporters
 			}
 #endif
 			EngineBuiltInAsset engneAsset = GetEngineBuildInAsset(asset);
-			ulong exportID = engneAsset.ExportID;
+			long exportID = engneAsset.ExportID;
 			EngineGUID guid = engneAsset.IsDefault ? FGUID : EGUID;
 			return new ExportPointer(exportID, guid, AssetType.Internal);
 		}
