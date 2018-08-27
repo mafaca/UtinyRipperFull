@@ -68,7 +68,7 @@ namespace UtinyRipperFull
 			try
 #endif
 			{
-				GameStructure.Load(args);
+				GameStructure = GameStructure.Load(args);
 				Validate();
 
 				string exportPath = Path.Combine("Ripped", GameStructure.Name);
@@ -224,6 +224,6 @@ namespace UtinyRipperFull
 			}
 		}
 		
-		private GameStructure GameStructure { get; } = new GameStructure();
+		private GameStructure GameStructure { get; set; }
 	}
 }
