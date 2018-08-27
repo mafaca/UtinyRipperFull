@@ -139,7 +139,8 @@ namespace UtinyRipperFull.Exporters
             switch (texture.TextureFormat)
             {
 	            case TextureFormat.DXT1:
-	            case TextureFormat.DXT5:
+				case TextureFormat.DXT3:
+				case TextureFormat.DXT5:
 				case TextureFormat.Alpha8:
 				case TextureFormat.ARGB4444:
 				case TextureFormat.RGB24:
@@ -308,6 +309,9 @@ namespace UtinyRipperFull.Exporters
 					case DDSFourCCType.DXT1:
 						DDSDecompressor.DecompressDXT1(destination, source, @params);
 						break;
+					case DDSFourCCType.DXT3:
+						DDSDecompressor.DecompressDXT3(destination, source, @params);
+						break;
 					case DDSFourCCType.DXT5:
 						DDSDecompressor.DecompressDXT5(destination, source, @params);
 						break;
@@ -470,7 +474,10 @@ namespace UtinyRipperFull.Exporters
                 case TextureFormat.DXT1Crunched:
 	                return QFormat.Q_FORMAT_S3TC_DXT1_RGB;
 
-                case TextureFormat.DXT5:
+				case TextureFormat.DXT3:
+					return QFormat.Q_FORMAT_S3TC_DXT3_RGBA;
+
+				case TextureFormat.DXT5:
                 case TextureFormat.DXT5Crunched:
 	                return QFormat.Q_FORMAT_S3TC_DXT5_RGBA;
 
