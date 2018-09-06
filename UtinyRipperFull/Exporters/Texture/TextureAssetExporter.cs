@@ -49,11 +49,13 @@ namespace UtinyRipperFull.Exporters
 				string resourcePath = texture.StreamData.Path;
 				if (resourcePath != string.Empty)
 				{
-					ResourcesFile res = texture.File.Collection.FindResourcesFile(texture.File, resourcePath);
-					if (res == null)
+					using (ResourcesFile res = texture.File.Collection.FindResourcesFile(texture.File, resourcePath))
 					{
-						Logger.Instance.Log(LogType.Warning, LogCategory.Export, $"Can't export '{texture.Name}' because resources file '{resourcePath}' wasn't found");
-						return;
+						if (res == null)
+						{
+							Logger.Instance.Log(LogType.Warning, LogCategory.Export, $"Can't export '{texture.Name}' because resources file '{resourcePath}' wasn't found");
+							return;
+						}
 					}
 				}
 			}
@@ -113,11 +115,13 @@ namespace UtinyRipperFull.Exporters
 					{
 						throw new Exception("Texture contains data and resource path");
 					}
-					
-					ResourcesFile res = texture.File.Collection.FindResourcesFile(texture.File, path);					
-					res.Position = texture.StreamData.Offset;
-					buffer = new byte[texture.StreamData.Size];
-					res.Stream.Read(buffer, 0, buffer.Length);
+
+					using (ResourcesFile res = texture.File.Collection.FindResourcesFile(texture.File, path))
+					{
+						res.Position = texture.StreamData.Offset;
+						buffer = new byte[texture.StreamData.Size];
+						res.Stream.Read(buffer, 0, buffer.Length);
+					}
 				}
 			}
 			else
