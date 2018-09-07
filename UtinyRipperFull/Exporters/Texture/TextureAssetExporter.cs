@@ -118,9 +118,12 @@ namespace UtinyRipperFull.Exporters
 
 					using (ResourcesFile res = texture.File.Collection.FindResourcesFile(texture.File, path))
 					{
-						res.Position = texture.StreamData.Offset;
-						buffer = new byte[texture.StreamData.Size];
-						res.Stream.Read(buffer, 0, buffer.Length);
+						using (PartialStream resStream = new PartialStream(res.Stream, res.Offset, res.Size))
+						{
+							resStream.Position = texture.StreamData.Offset;
+							buffer = new byte[texture.StreamData.Size];
+							resStream.Read(buffer, 0, buffer.Length);
+						}
 					}
 				}
 			}
