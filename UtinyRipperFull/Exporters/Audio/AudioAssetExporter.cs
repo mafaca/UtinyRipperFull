@@ -8,7 +8,7 @@ using UtinyRipper;
 using UtinyRipper.AssetExporters;
 using UtinyRipper.Classes;
 using UtinyRipper.Classes.AudioClips;
-
+using UtinyRipper.SerializedFiles;
 using Object = UtinyRipper.Classes.Object;
 
 namespace UtinyRipperFull.Exporters
@@ -59,7 +59,7 @@ namespace UtinyRipperFull.Exporters
 			return true;
 		}
 
-		public IExportCollection CreateCollection(Object asset)
+		public IExportCollection CreateCollection(VirtualSerializedFile virtualFile, Object asset)
 		{
 			return new AudioExportCollection(this, (AudioClip)asset);
 		}

@@ -8,7 +8,7 @@ using UtinyRipper.AssetExporters;
 using UtinyRipper.Classes;
 using UtinyRipper.Classes.Shaders;
 using UtinyRipper.Classes.Shaders.Exporters;
-
+using UtinyRipper.SerializedFiles;
 using Object = UtinyRipper.Classes.Object;
 
 namespace UtinyRipperFull.Exporters
@@ -62,7 +62,7 @@ namespace UtinyRipperFull.Exporters
 			throw new NotSupportedException();
 		}
 
-		public IExportCollection CreateCollection(Object asset)
+		public IExportCollection CreateCollection(VirtualSerializedFile virtualFile, Object asset)
 		{
 			return new AssetExportCollection(this, asset);
 		}

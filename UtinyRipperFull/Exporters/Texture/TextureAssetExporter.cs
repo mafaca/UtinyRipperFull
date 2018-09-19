@@ -11,7 +11,7 @@ using UtinyRipper.Classes.Textures;
 using UtinyRipper.Converter.Textures.DDS;
 using UtinyRipper.Converter.Textures.KTX;
 using UtinyRipper.Converter.Textures.PVR;
-
+using UtinyRipper.SerializedFiles;
 using Object = UtinyRipper.Classes.Object;
 
 namespace UtinyRipperFull.Exporters
@@ -78,7 +78,7 @@ namespace UtinyRipperFull.Exporters
 			throw new NotSupportedException();
 		}
 
-		public IExportCollection CreateCollection(Object asset)
+		public IExportCollection CreateCollection(VirtualSerializedFile virtualFile, Object asset)
 		{
 			if (asset.ClassID == ClassIDType.Sprite)
 			{

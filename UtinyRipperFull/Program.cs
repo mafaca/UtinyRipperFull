@@ -11,6 +11,7 @@ using System.Linq;
 using System.Security.AccessControl;
 using System.Security.Principal;
 using UtinyRipper;
+using UtinyRipper.AssetExporters;
 using UtinyRipper.Classes;
 using UtinyRipperFull.Exporters;
 
@@ -115,9 +116,9 @@ namespace UtinyRipperFull
 
 		private static void PrepareExportDirectory(string path)
 		{
-			string directory = Directory.GetCurrentDirectory();
 			if (!RunetimeUtils.IsRunningOnMono)
 			{
+				string directory = Directory.GetCurrentDirectory();
 				CheckWritePermission(directory);
 			}
 
