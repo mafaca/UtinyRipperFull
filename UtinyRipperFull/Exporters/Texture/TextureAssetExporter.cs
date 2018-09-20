@@ -4,6 +4,7 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Runtime.InteropServices;
+using System.Text;
 using UtinyRipper;
 using UtinyRipper.AssetExporters;
 using UtinyRipper.Classes;
@@ -284,16 +285,10 @@ namespace UtinyRipperFull.Exporters
 			{
 				using (MemoryStream source = new MemoryStream(data))
 				{
-					if(texture.IsSwapBytes(container.Platform))
+					EndianType endianess = texture.IsSwapBytes(container.Platform) ? EndianType.BigEndian : EndianType.LittleEndian;
+					using (EndianReader sourceReader = new EndianReader(source, endianess))
 					{
-						using (ReverseStream reverse = new ReverseStream(source, source.Position, data.Length, true))
-						{
-							DecompressDDS(reverse, destination, @params);
-						}
-					}
-					else
-					{
-						DecompressDDS(source, destination, @params);
+						DecompressDDS(sourceReader, destination, @params);
 					}
 				}
 
@@ -307,20 +302,20 @@ namespace UtinyRipperFull.Exporters
 			}
 		}
 
-		private void DecompressDDS(Stream source, Stream destination, DDSConvertParameters @params)
+		private void DecompressDDS(BinaryReader reader, Stream destination, DDSConvertParameters @params)
 		{
 			if (@params.PixelFormatFlags.IsFourCC())
 			{
 				switch (@params.FourCC)
 				{
 					case DDSFourCCType.DXT1:
-						DDSDecompressor.DecompressDXT1(destination, source, @params);
+						DDSDecompressor.DecompressDXT1(reader, destination, @params);
 						break;
 					case DDSFourCCType.DXT3:
-						DDSDecompressor.DecompressDXT3(destination, source, @params);
+						DDSDecompressor.DecompressDXT3(reader, destination, @params);
 						break;
 					case DDSFourCCType.DXT5:
-						DDSDecompressor.DecompressDXT5(destination, source, @params);
+						DDSDecompressor.DecompressDXT5(reader, destination, @params);
 						break;
 
 					default:
@@ -337,11 +332,11 @@ namespace UtinyRipperFull.Exporters
 				{
 					if (@params.PixelFormatFlags.IsAlphaPixels())
 					{
-						DDSDecompressor.DecompressRGBA(destination, source, @params);
+						DDSDecompressor.DecompressRGBA(reader, destination, @params);
 					}
 					else
 					{
-						DDSDecompressor.DecompressRGB(destination, source, @params);
+						DDSDecompressor.DecompressRGB(reader, destination, @params);
 					}
 				}
 			}
